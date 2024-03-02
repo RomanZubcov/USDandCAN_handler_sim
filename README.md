@@ -32,13 +32,18 @@ sudo ip link set up vcan0
 ### Install python-can:
 
 The python-can library is required for CAN communication. Install it using pip:
--   python uds_simulator.py
+
+```bash
+python uds_simulator.py
+```
 
 ### Run the Simulator:
 
 Clone the repository or download the source code. Navigate to the directory containing the script and run it:
 
--   python uds_simulator.py
+```bash
+python uds_simulator.py
+```
 
 ## Usage
 
