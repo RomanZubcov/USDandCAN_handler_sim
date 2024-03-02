@@ -1,0 +1,89 @@
+Terminal Text:
+Trimis: Diagnostic Session Control (ID=16)
+Răspuns negativ pentru Diagnostic Session Control
+Trimis: ECU Reset (ID=17)
+Răspuns negativ pentru ECU Reset
+Trimis: ECU Reset (ID=17)
+Răspuns pozitiv pentru ECU Reset
+Trimis: ECU Reset (ID=17)
+Răspuns pozitiv pentru ECU Reset
+Trimis: ECU Reset (ID=17)
+Răspuns negativ pentru ECU Reset
+Trimis: Security Access (ID=39)
+Răspuns pozitiv pentru Security Access
+Trimis: Read DTC Information (ID=25)
+Răspuns pozitiv pentru Read DTC Information
+Trimis: Read Data By Identifier (ID=34)
+Răspuns negativ pentru Read Data By Identifier
+Trimis: Read DTC Information (ID=25)
+Răspuns negativ pentru Read DTC Information
+Trimis: ECU Reset (ID=17)
+Răspuns pozitiv pentru ECU Reset
+Trimis: Diagnostic Session Control (ID=16)
+Răspuns pozitiv pentru Diagnostic Session Control
+Trimis: Security Access (ID=39)
+Răspuns negativ pentru Security Access
+Trimis: ECU Reset (ID=17)
+Răspuns negativ pentru ECU Reset
+Trimis: ECU Reset (ID=17)
+Răspuns pozitiv pentru ECU Reset
+Trimis: ECU Reset (ID=17)
+Răspuns pozitiv pentru ECU Reset
+Trimis: ECU Reset (ID=17)
+Răspuns pozitiv pentru ECU Reset
+Trimis: ECU Reset (ID=17)
+Răspuns negativ pentru ECU Reset
+Trimis: Read Data By Identifier (ID=34)
+Răspuns negativ pentru Read Data By Identifier
+Trimis: Read Data By Identifier (ID=34)
+Răspuns negativ pentru Read Data By Identifier
+Trimis: Read Data By Identifier (ID=34)
+Răspuns negativ pentru Read Data By Identifier
+Trimis: Read Data By Identifier (ID=34)
+Răspuns negativ pentru Read Data By Identifier
+
+
+Terminal Hex:
+Mesaj CAN trimis: Timestamp:        0.000000    ID:      7df    S Rx                DL:  8    10 00 00 00 00 00 00 00
+Răspuns Hex: 7F 00 00 00 00 00 00 00
+Mesaj CAN trimis: Timestamp:        0.000000    ID:      7df    S Rx                DL:  8    11 00 00 00 00 00 00 00
+Răspuns Hex: 7F 00 00 00 00 00 00 00
+Mesaj CAN trimis: Timestamp:        0.000000    ID:      7df    S Rx                DL:  8    11 00 00 00 00 00 00 00
+Răspuns Hex: 51 FF FF FF FF FF FF FF
+Mesaj CAN trimis: Timestamp:        0.000000    ID:      7df    S Rx                DL:  8    11 00 00 00 00 00 00 00
+Răspuns Hex: 51 FF FF FF FF FF FF FF
+Mesaj CAN trimis: Timestamp:        0.000000    ID:      7df    S Rx                DL:  8    11 00 00 00 00 00 00 00
+Răspuns Hex: 7F 00 00 00 00 00 00 00
+Mesaj CAN trimis: Timestamp:        0.000000    ID:      7df    S Rx                DL:  8    27 00 00 00 00 00 00 00
+Răspuns Hex: 67 FF FF FF FF FF FF FF
+Mesaj CAN trimis: Timestamp:        0.000000    ID:      7df    S Rx                DL:  8    19 00 00 00 00 00 00 00
+Răspuns Hex: 59 FF FF FF FF FF FF FF
+Mesaj CAN trimis: Timestamp:        0.000000    ID:      7df    S Rx                DL:  8    22 00 00 00 00 00 00 00
+Răspuns Hex: 7F 00 00 00 00 00 00 00
+Mesaj CAN trimis: Timestamp:        0.000000    ID:      7df    S Rx                DL:  8    19 00 00 00 00 00 00 00
+Răspuns Hex: 7F 00 00 00 00 00 00 00
+Mesaj CAN trimis: Timestamp:        0.000000    ID:      7df    S Rx                DL:  8    11 00 00 00 00 00 00 00
+Răspuns Hex: 51 FF FF FF FF FF FF FF
+Mesaj CAN trimis: Timestamp:        0.000000    ID:      7df    S Rx                DL:  8    10 00 00 00 00 00 00 00
+Răspuns Hex: 50 FF FF FF FF FF FF FF
+Mesaj CAN trimis: Timestamp:        0.000000    ID:      7df    S Rx                DL:  8    27 00 00 00 00 00 00 00
+Răspuns Hex: 7F 00 00 00 00 00 00 00
+Mesaj CAN trimis: Timestamp:        0.000000    ID:      7df    S Rx                DL:  8    11 00 00 00 00 00 00 00
+Răspuns Hex: 7F 00 00 00 00 00 00 00
+Mesaj CAN trimis: Timestamp:        0.000000    ID:      7df    S Rx                DL:  8    11 00 00 00 00 00 00 00
+Răspuns Hex: 51 FF FF FF FF FF FF FF
+Mesaj CAN trimis: Timestamp:        0.000000    ID:      7df    S Rx                DL:  8    11 00 00 00 00 00 00 00
+Răspuns Hex: 51 FF FF FF FF FF FF FF
+Mesaj CAN trimis: Timestamp:        0.000000    ID:      7df    S Rx                DL:  8    11 00 00 00 00 00 00 00
+Răspuns Hex: 51 FF FF FF FF FF FF FF
+Mesaj CAN trimis: Timestamp:        0.000000    ID:      7df    S Rx                DL:  8    11 00 00 00 00 00 00 00
+Răspuns Hex: 7F 00 00 00 00 00 00 00
+Mesaj CAN trimis: Timestamp:        0.000000    ID:      7df    S Rx                DL:  8    22 00 00 00 00 00 00 00
+Răspuns Hex: 7F 00 00 00 00 00 00 00
+Mesaj CAN trimis: Timestamp:        0.000000    ID:      7df    S Rx                DL:  8    22 00 00 00 00 00 00 00
+Răspuns Hex: 7F 00 00 00 00 00 00 00
+Mesaj CAN trimis: Timestamp:        0.000000    ID:      7df    S Rx                DL:  8    22 00 00 00 00 00 00 00
+Răspuns Hex: 7F 00 00 00 00 00 00 00
+Mesaj CAN trimis: Timestamp:        0.000000    ID:      7df    S Rx                DL:  8    22 00 00 00 00 00 00 00
+Răspuns Hex: 7F 00 00 00 00 00 00 00
+
