@@ -9,7 +9,7 @@ class UDSInterface(tk.Tk):
         self.title("Simulator UDS")
         self.geometry("1680x600")  
         
-        # Mărit dimensiunea terminalelor
+        # Marit dimensiunea terminalelor
         self.terminal_text = scrolledtext.ScrolledText(self, state='disabled', height=25, width=80)
         self.terminal_text.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
 
@@ -35,7 +35,7 @@ class UDSInterface(tk.Tk):
             button = tk.Button(button_frame, text=name, command=lambda service_id=id, service_name=name: self.send_request(service_id, service_name))
             button.grid(row=row, column=column, sticky="ew", padx=5, pady=5)
 
-        self.save_log_button = tk.Button(button_frame, text="Salvează Log", command=self.save_log)
+        self.save_log_button = tk.Button(button_frame, text="Salveaza Log", command=self.save_log)
         self.save_log_button.grid(row=1, column=2, sticky="ew", padx=5, pady=5)
 
     def log_message(self, message, color, hex_format=False):
@@ -53,23 +53,23 @@ class UDSInterface(tk.Tk):
             self.bus.send(message)
             self.log_message(f"Trimis: {service_name} (ID={service_id})", 'black', hex_format=False)
             self.log_message(f"Mesaj CAN trimis: {message}", 'black', hex_format=True)
-            self.simulate_ecu_response(service_id, service_name)  # Adăugat pentru a simula răspunsurile
+            self.simulate_ecu_response(service_id, service_name)  # Adaugat pentru a simula raspunsurile
         except can.CanError:
             self.log_message("Eroare la trimiterea mesajului CAN", 'red')
 
     def simulate_ecu_response(self, service_id, service_name):
-        # Simularea răspunsurilor ECU aleatorii
+        # Simularea raspunsurilor ECU aleatorii
         is_positive_response = random.choice([True, False])
         if is_positive_response:
             response_id = service_id + 0x40
             response_data = f"{response_id:02X}" + ' ' + ' '.join(['FF' for _ in range(7)])
-            self.log_message(f"Răspuns pozitiv pentru {service_name}", 'green', hex_format=False)
-            self.log_message(f"Răspuns Hex: {response_data}", 'green', hex_format=True)
+            self.log_message(f"Raspuns pozitiv pentru {service_name}", 'green', hex_format=False)
+            self.log_message(f"Raspuns Hex: {response_data}", 'green', hex_format=True)
         else:
             response_id = 0x7F
             response_data = f"{response_id:02X}" + ' ' + ' '.join(['00' for _ in range(7)])
-            self.log_message(f"Răspuns negativ pentru {service_name}", 'red', hex_format=False)
-            self.log_message(f"Răspuns Hex: {response_data}", 'red', hex_format=True)
+            self.log_message(f"Raspuns negativ pentru {service_name}", 'red', hex_format=False)
+            self.log_message(f"Raspuns Hex: {response_data}", 'red', hex_format=True)
 
     def save_log(self):
         log_file = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
