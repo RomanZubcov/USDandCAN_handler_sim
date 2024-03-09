@@ -7,8 +7,8 @@ class ServerInterface(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Server UDS")
-        self.geometry("800x600")
-        self.terminal_hex = scrolledtext.ScrolledText(self, state='disabled', height=25, width=80)
+        self.geometry("950x500")
+        self.terminal_hex = scrolledtext.ScrolledText(self, state='disabled', height=25, width=110)
         self.terminal_hex.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
 
     def log_message(self, message, color):
