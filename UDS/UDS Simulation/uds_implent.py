@@ -25,7 +25,7 @@ class UDSInterface(tk.Tk):
         self.title("Simulator UDS Client")
         self.geometry("1680x600")
 
-        # Marit dimensiunea terminalelor
+        # Initializează terminalele
         self.terminal_text = scrolledtext.ScrolledText(self, state='disabled', height=25, width=80)
         self.terminal_text.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
 
@@ -42,6 +42,7 @@ class UDSInterface(tk.Tk):
             ("Read DTC Information", 0x19)
         ]
 
+        # Crează butoanele pentru servicii
         button_frame = tk.Frame(self)
         button_frame.grid(row=1, column=0, columnspan=2, pady=10)
 
@@ -51,6 +52,7 @@ class UDSInterface(tk.Tk):
             button = tk.Button(button_frame, text=name, command=lambda service_id=id, service_name=name: self.send_request(service_id, service_name))
             button.grid(row=row, column=column, sticky="ew", padx=5, pady=5)
 
+        # Buton pentru salvarea log-urilor
         self.save_log_button = tk.Button(button_frame, text="Salveaza Log", command=self.save_log)
         self.save_log_button.grid(row=1, column=2, sticky="ew", padx=5, pady=5)
 
@@ -63,27 +65,35 @@ class UDSInterface(tk.Tk):
         terminal.see(tk.END)
 
     def send_request(self, service_id, service_name):
-        command_data = [service_id] + [0x00] * 7
+        if service_id == 0x22:
+            command_data = [0x22, 0xF1, 0x90] + [0x00] * 5
+        else:
+            command_data = [service_id] + [0x00] * 7
+
         message = can.Message(arbitration_id=0x7df, data=command_data, is_extended_id=False)
         try:
             self.bus.send(message)
             self.log_message(f"Trimis: {service_name} (ID={service_id})", 'black')
             self.log_message(f"Mesaj CAN trimis: {message}", 'black', hex_format=True)
-            self.simulate_ecu_response(service_id, service_name)
+            self.simulate_ecu_response(service_id, service_name, command_data)
         except can.CanError:
             self.log_message("Eroare la trimiterea mesajului CAN", 'red')
 
-    def simulate_ecu_response(self, service_id, service_name):
-        # Aici trimitem răspunsurile la server
-        is_positive_response = random.choice([True, False])
-        if is_positive_response:
-            response_id = service_id + 0x40
-            response_data = f"{response_id:02X}" + ' ' + ' '.join(['FF' for _ in range(7)])
+    def simulate_ecu_response(self, service_id, service_name, command_data):
+        if command_data[:3] == [0x22, 0xF1, 0x90]:  # Specific pentru Read Data By Identifier
+            vin_code = "1P8ZA1279SZ215470"
+            vin_hex = ' '.join([f'{ord(c):02X}' for c in vin_code])
+            response_data = f"62 F1 90 " + vin_hex  # Presupunând că 62 este PID pentru răspuns pozitiv
             self.server.log_message(f"Raspuns pozitiv pentru {service_name}: {response_data}", 'green')
         else:
-            response_id = 0x7F
-            response_data = f"{response_id:02X}" + ' ' + ' '.join(['00' for _ in range(7)])
-            self.server.log_message(f"Raspuns negativ pentru {service_name}: {response_data}", 'red')
+            is_positive_response = random.choice([True, False])
+            if is_positive_response:
+                response_id = service_id + 0x40
+                response_data = f"{response_id:02X}" + ' ' + ' '.join(['FF' for _ in range(7)])
+                self.server.log_message(f"Raspuns pozitiv pentru {service_name}: {response_data}", 'green')
+            else:
+                response_data = "7F " + f"{service_id:02X}" + ' 78' + ' ' + ' '.join(['00' for _ in range(5)])
+                self.server.log_message(f"Raspuns negativ pentru {service_name}: {response_data}", 'red')
 
     def save_log(self):
         log_file = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
@@ -95,6 +105,6 @@ class UDSInterface(tk.Tk):
 
 if __name__ == "__main__":
     server_app = ServerInterface()
-    client_app = UDSInterface(server_app)
+    client_app = UDSInterface(server=server_app)
     server_app.mainloop()
     client_app.mainloop()
