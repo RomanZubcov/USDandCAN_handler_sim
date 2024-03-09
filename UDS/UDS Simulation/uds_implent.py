@@ -69,6 +69,9 @@ class UDSInterface(tk.Tk):
 
     def send_request(self, service_id, service_name):
         if service_id == 0x22:
+            if self.current_session != "extended":
+                self.simulate_negative_response(service_name)
+                return
             command_data = [0x22, 0xF1, 0x90]+ [0x00] * 5  # Hexadecimal bytes for "22 F1 90"
         else:
             command_data = [service_id] + [0x00] * 7
@@ -105,11 +108,14 @@ class UDSInterface(tk.Tk):
             self.log_message("Error sending session control CAN message", 'red')
 
     def simulate_ecu_response(self, service_id, service_name, command_data):
-        if service_id == 0x22 and self.current_session == "extended":
-            vin_code = "1P8ZA1279SZ215470"
-            vin_hex = ' '.join([f'{ord(c):02X}' for c in vin_code])
-            response_data = f"62 F1 90 " + vin_hex
-            self.server.log_message(f"Positive response for {service_name}: {response_data}", 'green')
+        if service_id == 0x22:
+            if self.current_session == "extended":
+                vin_code = "1P8ZA1279SZ215470"
+                vin_hex = ' '.join([f'{ord(c):02X}' for c in vin_code])
+                response_data = f"62 F1 90 " + vin_hex
+                self.server.log_message(f"Positive response for {service_name}: {response_data}", 'green')
+            else:
+                self.simulate_negative_response(service_name)
         else:
             is_positive_response = random.choice([True, False])
             if is_positive_response:
@@ -118,6 +124,10 @@ class UDSInterface(tk.Tk):
             else:
                 response_data = "Negative response simulation"
                 self.server.log_message(f"Negative response for {service_name}: {response_data}", 'red')
+
+    def simulate_negative_response(self, service_name):
+        negative_response_data = "7F 22 31 00 00 00 00 00"   # 7F 22 - Negative response code, 31 - request out of range
+        self.server.log_message(f"Negative response for {service_name}: {negative_response_data}", 'red')
 
     def save_log(self):
         log_file = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
