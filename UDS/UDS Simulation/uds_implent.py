@@ -21,11 +21,11 @@ class ServerInterface(tk.Tk):
 class UDSInterface(tk.Tk):
     def __init__(self, server):
         super().__init__()
-        self.server = server  # Referința la server
-        self.title("Simulator UDS Client")
+        self.server = server
+        self.current_session = "default"  # 'default' or 'extended'
+        self.title("Client UDS")
         self.geometry("1680x600")
 
-        # Initializează terminalele
         self.terminal_text = scrolledtext.ScrolledText(self, state='disabled', height=25, width=80)
         self.terminal_text.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
 
@@ -42,7 +42,6 @@ class UDSInterface(tk.Tk):
             ("Read DTC Information", 0x19)
         ]
 
-        # Crează butoanele pentru servicii
         button_frame = tk.Frame(self)
         button_frame.grid(row=1, column=0, columnspan=2, pady=10)
 
@@ -52,9 +51,15 @@ class UDSInterface(tk.Tk):
             button = tk.Button(button_frame, text=name, command=lambda service_id=id, service_name=name: self.send_request(service_id, service_name))
             button.grid(row=row, column=column, sticky="ew", padx=5, pady=5)
 
-        # Buton pentru salvarea log-urilor
+        extended_session_button = tk.Button(button_frame, text="Extended Session", command=lambda: self.set_session("extended"))
+        extended_session_button.grid(row=2, column=0, sticky="ew", padx=5, pady=5)
+
         self.save_log_button = tk.Button(button_frame, text="Salveaza Log", command=self.save_log)
-        self.save_log_button.grid(row=1, column=2, sticky="ew", padx=5, pady=5)
+        self.save_log_button.grid(row=2, column=2, sticky="ew", padx=5, pady=5)
+
+        
+        clear_button = tk.Button(button_frame, text="Clear log", command=self.clear_terminals)
+        clear_button.grid(row=1, column=2, sticky="ew", padx=5, pady=5)
 
     def log_message(self, message, color, hex_format=False):
         terminal = self.terminal_hex if hex_format else self.terminal_text
@@ -65,10 +70,13 @@ class UDSInterface(tk.Tk):
         terminal.see(tk.END)
 
     def send_request(self, service_id, service_name):
-        if service_id == 0x22:
-            command_data = [0x22, 0xF1, 0x90] + [0x00] * 5
-        else:
-            command_data = [service_id] + [0x00] * 7
+        if service_id == 0x22 and self.current_session != "extended":
+            self.log_message("Comanda 'Read Data By Identifier' necesită sesiunea extended.", 'red')
+            return
+        
+        command_data = [service_id] + [0x00] * 7
+        if service_id == 0x10:  # Handle session control commands specifically
+            command_data[1] = 0x01 if self.current_session == "default" else 0x03
 
         message = can.Message(arbitration_id=0x7df, data=command_data, is_extended_id=False)
         try:
@@ -80,20 +88,26 @@ class UDSInterface(tk.Tk):
             self.log_message("Eroare la trimiterea mesajului CAN", 'red')
 
     def simulate_ecu_response(self, service_id, service_name, command_data):
-        if command_data[:3] == [0x22, 0xF1, 0x90]:  # Specific pentru Read Data By Identifier
+         
+        if service_id == 0x22 and self.current_session == "extended":
+            # Specific pentru "Read Data By Identifier" în sesiunea extended
             vin_code = "1P8ZA1279SZ215470"
             vin_hex = ' '.join([f'{ord(c):02X}' for c in vin_code])
-            response_data = f"62 F1 90 " + vin_hex  # Presupunând că 62 este PID pentru răspuns pozitiv
+            response_data = f"62 F1 90 " + vin_hex
             self.server.log_message(f"Raspuns pozitiv pentru {service_name}: {response_data}", 'green')
         else:
             is_positive_response = random.choice([True, False])
             if is_positive_response:
-                response_id = service_id + 0x40
-                response_data = f"{response_id:02X}" + ' ' + ' '.join(['FF' for _ in range(7)])
+                response_data = "Positive response simulation for other services"
                 self.server.log_message(f"Raspuns pozitiv pentru {service_name}: {response_data}", 'green')
             else:
-                response_data = "7F " + f"{service_id:02X}" + ' 78' + ' ' + ' '.join(['00' for _ in range(5)])
+                response_data = "Negative response simulation"
                 self.server.log_message(f"Raspuns negativ pentru {service_name}: {response_data}", 'red')
+
+    def set_session(self, session_type):
+        self.current_session = session_type
+        session_id = 0x01 if session_type == "default" else 0x03
+        self.send_request(0x10, f"Set {session_type.capitalize()} Session")
 
     def save_log(self):
         log_file = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
@@ -102,6 +116,14 @@ class UDSInterface(tk.Tk):
                 text_content = self.terminal_text.get("1.0", tk.END)
                 hex_content = self.terminal_hex.get("1.0", tk.END)
                 file.write("Terminal Text:\n" + text_content + "\nTerminal Hex:\n" + hex_content)
+
+    def clear_terminals(self):
+        self.terminal_text.config(state='normal')
+        self.terminal_hex.config(state='normal')
+        self.terminal_text.delete('1.0', tk.END)
+        self.terminal_hex.delete('1.0', tk.END)
+        self.terminal_text.config(state='disabled')
+        self.terminal_hex.config(state='disabled')
 
 if __name__ == "__main__":
     server_app = ServerInterface()
