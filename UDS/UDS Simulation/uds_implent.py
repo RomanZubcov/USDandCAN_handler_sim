@@ -22,11 +22,12 @@ class UDSInterface(tk.Tk):
     def __init__(self, server):
         super().__init__()
         self.server = server
-        self.current_session = "default"  # 'default' or 'extended'
+        self.current_session = "default"
+        self.current_security_seed = None
         self.title("Client UDS")
         self.geometry("1680x600")
-        self.init_ui()
         self.bus = can.interface.Bus(channel='vcan0', bustype='socketcan')
+        self.init_ui()
 
     def init_ui(self):
         self.terminal_text = scrolledtext.ScrolledText(self, state='disabled', height=25, width=80)
@@ -44,20 +45,17 @@ class UDSInterface(tk.Tk):
             ("ECU Reset", self.send_ecu_reset),
             ("Read Data By Identifier", lambda: self.send_request(0x22, "Read Data By Identifier")),
             ("Security Access", lambda: self.send_request(0x27, "Security Access")),
-            ("Read DTC Information", lambda: self.send_request(0x19, "Read DTC Information"))
+            ("Read DTC Information", lambda: self.send_request(0x19, "Read DTC Information")),
+            ("Save Log to File", self.save_log),
+            ("Clear Log", self.clear_terminals),
         ]
 
         for i, (name, action) in enumerate(services):
-            row = i // 3
-            column = i % 3
             button = tk.Button(button_frame, text=name, command=action)
-            button.grid(row=row, column=column, sticky="ew", padx=5, pady=5)
+            button.grid(row=i//3, column=i%3, sticky="ew", padx=5, pady=5)
 
-        self.save_log_button = tk.Button(button_frame, text="Save Log to", command=self.save_log)
-        self.save_log_button.grid(row=2, column=2, sticky="ew", padx=5, pady=5)
-
-        clear_button = tk.Button(button_frame, text="Clear log", command=self.clear_terminals)
-        clear_button.grid(row=2, column=1, sticky="ew", padx=5, pady=5)
+        self.send_seed_button = tk.Button(button_frame, text="Send Security Seed", command=self.send_security_seed)
+        self.send_seed_button.grid(row=2, column=0, sticky="ew", padx=5, pady=5)
 
     def log_message(self, message, color, hex_format=False):
         terminal = self.terminal_hex if hex_format else self.terminal_text
@@ -68,21 +66,61 @@ class UDSInterface(tk.Tk):
         terminal.see(tk.END)
 
     def send_request(self, service_id, service_name):
-        if service_id == 0x22:
-            if self.current_session != "extended":
-                self.simulate_negative_response(service_name)
-                return
-            command_data = [0x22, 0xF1, 0x90]+ [0x00] * 5  # Hexadecimal bytes for "22 F1 90"
+    # Handling the Security Access request in the extended session
+        if service_id == 0x27 and self.current_session == "extended":
+            self.current_security_seed = random.randint(0, 0xFFFF)
+            seed_hex = f'{self.current_security_seed:04X}'
+            # Simulating receiving the security seed
+            self.log_message(f"27 01 - Requesting security access", 'blue', hex_format=True)
+            self.log_message(f"67 01 {seed_hex} - Received security seed", 'green', hex_format=True)
+            self.server.log_message(f"Security access seed provided: {seed_hex}", 'green')
+            # Simulating sending the request with '27 01' and receiving the seed
+            command_data = [0x27, 0x01] + [0x00] * 6
+            message = can.Message(arbitration_id=0x7df, data=command_data, is_extended_id=False)
+            try:
+                self.bus.send(message)
+                self.log_message(f"Sent security access request: {' '.join([f'{byte:02X}' for byte in command_data])}", 'black', hex_format=True)
+            except can.CanError:
+                self.log_message("Error sending security access request", 'red')
+            return  # Return after handling the security access to prevent further execution
+
+    # Handling the Read Data By Identifier service outside of the default session
+        if service_id == 0x22 and self.current_session != "default":
+            self.simulate_negative_response(service_name)
+            return
+
+    # Handling other requests
         else:
-            command_data = [service_id] + [0x00] * 7
-        message = can.Message(arbitration_id=0x7df, data=command_data, is_extended_id=False)
+            command_data = [service_id] + [0x00] * 7 if service_id != 0x22 else [0x22, 0xF1, 0x90] + [0x00] * 5
+            message = can.Message(arbitration_id=0x7df, data=command_data, is_extended_id=False)
         try:
             self.bus.send(message)
-            self.log_message(f"Sent: {service_name} (ID={service_id})", 'black')
+            self.log_message(f"Sent: {service_name} (ID={service_id})", 'black', hex_format=False)
             self.log_message(f"CAN message sent: {' '.join([f'{byte:02X}' for byte in command_data])}", 'black', hex_format=True)
             self.simulate_ecu_response(service_id, service_name, command_data)
         except can.CanError:
             self.log_message("Error sending CAN message", 'red')
+
+
+    def send_security_seed(self):
+        if self.current_security_seed is not None:
+        # Preparing to send back the security seed with '27 02' + seed
+            command_data = [0x27, 0x02] + [self.current_security_seed >> 8, self.current_security_seed & 0xFF] + [0x00] * 4
+            message = can.Message(arbitration_id=0x7df, data=command_data, is_extended_id=False)
+        try:
+            self.bus.send(message)
+            seed_hex = f'{self.current_security_seed:04X}'
+            self.log_message(f"Sent security seed back to ECU: 27 02 {seed_hex}", 'black', hex_format=True)
+            self.server.log_message("Security access granted", 'green')
+        except can.CanError:
+            self.log_message("Send 67 02", 'red')
+        else:
+            self.log_message("Send seed and Positive Response", 'green')
+
+
+
+
+
 
     def send_ecu_reset(self):
         command_data = [0x11, 0x01] + [0x00] * 6
